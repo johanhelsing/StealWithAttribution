@@ -29,9 +29,10 @@ namespace StealWithAttribution.Editor
             }
         }
 
-        private const int NumPreviewsPerPage = 100;
-        private readonly Texture[] previewTextures = new Texture[NumPreviewsPerPage];
-        private readonly string[] previewIds = new string[NumPreviewsPerPage];
+        private const int MaxPreviewPerPage = 200;
+        private int previewsPerPage = 20;
+        private readonly Texture[] previewTextures = new Texture[MaxPreviewPerPage];
+        private readonly string[] previewIds = new string[MaxPreviewPerPage];
         private bool loading = false;
         private readonly AnimBool browserExpanded = new AnimBool(false);
         private void HdriHavenBrowser()
@@ -43,13 +44,22 @@ namespace StealWithAttribution.Editor
             {
                 if (!group.visible) return;
 
-                if (previewTextures.All(texture => texture == null))
+                var oldPreviewsPerPage = previewsPerPage;
+                previewsPerPage = EditorGUILayout.IntField("Per page", previewsPerPage);
+                if (previewsPerPage != oldPreviewsPerPage)
+                {
+                    previewsPerPage = Mathf.Min(previewsPerPage, MaxPreviewPerPage);
+                    previewsPerPage += previewsPerPage % 2; // Make even
+                    for (var i = 0; i < previewsPerPage; ++i) previewTextures[i] = null;
+                }
+
+                if (previewTextures.Take(previewsPerPage).All(texture => texture == null))
                 {
                     if (!loading) LoadPreviews().Forget();
                     return;
                 }
 
-                for (var i = 0; i < previewTextures.Length; ++i)
+                for (var i = 0; i < previewsPerPage; ++i)
                 {
                     var texture = previewTextures[i];
                     var id = previewIds[i];
@@ -79,12 +89,12 @@ namespace StealWithAttribution.Editor
             var previews = metaData.assets
                 .Select(asset => asset.Key)
                 .Select(id => (id: id, download: HdriHavenApi.GetAssetPreviewTexture(id)))
-                .Take(NumPreviewsPerPage)
+                .Take(previewsPerPage)
                 .ToArray();
 
             var textures = await UniTask.WhenAll(previews.Select(p => p.download));
 
-            for (var i = 0; i < previewTextures.Length; ++i)
+            for (var i = 0; i < previewsPerPage; ++i)
             {
                 previewTextures[i] = textures[i];
                 previewIds[i] = previews[i].id;
