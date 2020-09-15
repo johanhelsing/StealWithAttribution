@@ -1,5 +1,7 @@
 # Steal With Attribution
 
+[![openupm](https://img.shields.io/npm/v/com.johanhelsing.stealwithattribution?label=openupm&registry_uri=https://package.openupm.com)](https://openupm.com/packages/com.johanhelsing.stealwithattribution/)
+
 I made this tool so I could quickly try out skyboxes from HDRIHaven in Unity
 with one click.
 
