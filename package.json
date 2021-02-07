@@ -14,8 +14,7 @@
     "url": "https://github.com/johanhelsing/StealWithAttribution"
   },
   "dependencies": {
-    "com.cysharp.unitask": "2.0.33",
-    "jillejr.newtonsoft.json-for-unity": "12.0.301"
+    "com.cysharp.unitask": "2.0.33"
   },
   "type": "tool"
 }
