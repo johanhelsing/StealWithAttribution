@@ -1,6 +1,6 @@
 {
   "name": "com.johanhelsing.stealwithattribution",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "displayName": "Steal With Attribution",
   "description": "Editor tool for easily downloading free assets from various sources",
   "unity": "2019.4",
