@@ -101,5 +101,15 @@ namespace StealWithAttribution.Editor
                 .Select(url => DownloadAndSaveFile(url, $"{directory}/{FileNameFromUrl(url)}"));
             return await UniTask.WhenAll(downloads);
         }
+
+        public static bool TryMove(string source, string destination)
+        {
+            if (!File.Exists(source))
+            {
+                return false;
+            }
+            File.Move(source, destination);
+            return true;
+        }
     }
 }

@@ -1,4 +1,6 @@
-﻿using Cysharp.Threading.Tasks;
+﻿using System.IO;
+using Cysharp.Threading.Tasks;
+using Newtonsoft.Json;
 using StealWithAttribution.Editor;
 using UnityEditor;
 using UnityEngine;
@@ -65,9 +67,15 @@ namespace StealWithAttribution.Sketchfab.Editor
             {
                 label = "Url"
             });
+
             root.Add(new Button(() => DownloadAndImportModel(importUrlField.text).Forget())
             {
                 text = "Import"
+            });
+
+            root.Add(new Button(() => LogMetadata(importUrlField.text).Forget())
+            {
+                text = "Log Metadata"
             });
         }
 
@@ -75,12 +83,23 @@ namespace StealWithAttribution.Sketchfab.Editor
         {
             var uid = SketchfabApi.GetUidFromUrl(url);
             var downloadUrl = await SketchfabApi.GetDownloadUrl(uid);
-            var folderName = Utils.FileNameFromUrl(downloadUrl).Replace(".zip", "");
+            var modelName = Utils.FileNameFromUrl(downloadUrl).Replace(".zip", "");
+            var destination = $"{settings.outputDirectory.AbsolutePath}/{modelName}";
             await Utils.DownloadAndUnzip(
                 downloadUrl,
-                $"{settings.outputDirectory.AbsolutePath}/{folderName}"
+                destination
             );
+
+            Utils.TryMove($"{destination}/scene.gltf", $"{destination}/{modelName}.gltf");
+
             AssetDatabase.Refresh();
+        }
+
+        private static async UniTask LogMetadata(string url)
+        {
+            var uid = SketchfabApi.GetUidFromUrl(url);
+            var metadata = await SketchfabApi.GetModelMetadata(uid);
+            Debug.Log(JsonConvert.SerializeObject(metadata));
         }
     }
 }

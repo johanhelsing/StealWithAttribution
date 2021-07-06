@@ -71,6 +71,34 @@ namespace StealWithAttribution.Sketchfab.Editor
             return downloadUrl;
         }
 
+        [Serializable]
+        public class ModelMetadata
+        {
+            // public string uid;
+            // public int animationCount;
+            public License license;
+            public string name;
+            public bool isDownloadable;
+
+            [Serializable]
+            public class License
+            {
+                public string uri;
+                public string label;
+                public string fullName;
+                public string requirements;
+                public string url;
+                public string slug;
+            }
+        }
+
+        public static async UniTask<ModelMetadata> GetModelMetadata(string uid)
+        {
+            var uri = $"{Api}/v3/models/{uid}";
+            var response = await WebApi.Get<ModelMetadata>(uri, Headers);
+            return response;
+        }
+
         public static string GetUidFromUrl(string url) => url.Split('-').Last().Trim();
     }
 }
