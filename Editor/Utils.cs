@@ -37,12 +37,46 @@ namespace StealWithAttribution.Editor
             }
         }
 
-        public static async UniTask<string> DownloadAndSaveFile(string url, string destination, IProgress<float> progress )
+        public static async UniTask<string> DownloadAndSaveFile(string url, string destination, IProgress<float> progress)
         {
             Debug.Log($"Downloading {url}...");
             var bytes = await GetBytesAsync(UnityWebRequest.Get(url), progress);
             Debug.Log($"Done Downloading {url}");
             await WriteAllBytesAsync(bytes, destination);
+            return destination;
+        }
+
+        public static async UniTask<string> DownloadAndUnzip(string url, string destination, IProgress<float> progress = null)
+        {
+            Debug.Log($"Downloading {url}...");
+            var bytes = await GetBytesAsync(UnityWebRequest.Get(url), progress);
+            Debug.Log($"Done Downloading {url}");
+            using var zipStream = new MemoryStream();
+            await zipStream.WriteAsync(bytes, 0, bytes.Length);
+            var archive = new System.IO.Compression.ZipArchive(zipStream);
+
+            if (!Directory.Exists(destination))
+            {
+                Directory.CreateDirectory(destination);
+            }
+
+            foreach (var entry in archive.Entries)
+            {
+                var path = $"{destination}/{entry.FullName}";
+                if (path.EndsWith("/"))
+                {
+                    if (!Directory.Exists(path))
+                    {
+                        Directory.CreateDirectory(path);
+                    }
+                }
+                else
+                {
+                    using var fileStream = File.OpenWrite(path);
+                    using var entryStream = entry.Open();
+                    await entryStream.CopyToAsync(fileStream);
+                }
+            }
             return destination;
         }
 

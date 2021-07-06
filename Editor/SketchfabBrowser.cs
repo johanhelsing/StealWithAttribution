@@ -1,4 +1,5 @@
 ﻿using Cysharp.Threading.Tasks;
+using StealWithAttribution.Editor;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.UIElements;
@@ -7,11 +8,18 @@ namespace StealWithAttribution.Sketchfab.Editor
 {
     public class SketchfabBrowser : EditorWindow
     {
-        public static void Open() => GetWindow(typeof(SketchfabBrowser));
-        private TextField userField, passField;
+        private TextField userField, passField, importUrlField;
+        private GltfImportSettings settings;
 
         private const string UserKey = "stealwithattribution_sketchfab_user";
         private const string PassKey = "stealwithattribution_sketchfab_pass";
+
+        public static void Open(GltfImportSettings settings)
+        {
+            var window = GetWindow(typeof(SketchfabBrowser)) as SketchfabBrowser;
+            Debug.Assert(window != null);
+            window.settings = settings;
+        }
 
         private string User
         {
@@ -25,7 +33,7 @@ namespace StealWithAttribution.Sketchfab.Editor
             set => SessionState.SetString(PassKey, value);
         }
 
-        public void OnEnable()
+        private void OnEnable()
         {
             titleContent = new GUIContent("Sketchfab browser");
         }
@@ -53,13 +61,26 @@ namespace StealWithAttribution.Sketchfab.Editor
                 text = "Login"
             });
 
-            root.Add(new Button(() =>
+            root.Add(importUrlField = new TextField
             {
-                const string uid = "36d8dcfadeda4c939bd92b30bfad6d1d";
-                SketchfabApi.GetDownloadUrl(uid).Forget();
-            }));
+                label = "Url"
+            });
+            root.Add(new Button(() => DownloadAndImportModel(importUrlField.text).Forget())
+            {
+                text = "Import"
+            });
         }
 
-        // SketchfabRequest tokenRequest = new SketchfabRequest(SketchfabPlugin.Urls.oauth, formData);
+        private async UniTask DownloadAndImportModel(string url)
+        {
+            var uid = SketchfabApi.GetUidFromUrl(url);
+            var downloadUrl = await SketchfabApi.GetDownloadUrl(uid);
+            var folderName = Utils.FileNameFromUrl(downloadUrl).Replace(".zip", "");
+            await Utils.DownloadAndUnzip(
+                downloadUrl,
+                $"{settings.outputDirectory.AbsolutePath}/{folderName}"
+            );
+            AssetDatabase.Refresh();
+        }
     }
 }

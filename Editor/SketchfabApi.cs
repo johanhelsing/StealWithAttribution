@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using Cysharp.Threading.Tasks;
 using StealWithAttribution.Editor;
 using UnityEditor;
@@ -69,5 +70,7 @@ namespace StealWithAttribution.Sketchfab.Editor
             // Debug.Log(downloadUrl);
             return downloadUrl;
         }
+
+        public static string GetUidFromUrl(string url) => url.Split('-').Last().Trim();
     }
 }

@@ -24,7 +24,7 @@ namespace StealWithAttribution.Editor
             root.Add(new PropertyField(serializedObject.FindProperty(nameof(GltfImportSettings.outputDirectory))));
             // var normalFields = base.CreateInspectorGUI();
             // root.Add(normalFields);
-            root.Add(new Button(SketchfabBrowser.Open)
+            root.Add(new Button(() => SketchfabBrowser.Open(settings))
             {
                 text = "Sketchfab browser"
             });
